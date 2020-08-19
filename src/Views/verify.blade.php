@@ -44,7 +44,7 @@
                                            type="checkbox"
                                            value="1"
                                            id="remember"
-                                           name="remember"{{ old('remember') ? ' checked' : '' }}>
+                                           name="remember"{{ old('remember', true) ? ' checked' : '' }}>
                                     <label class="form-check-label" for="remember">
                                         Remember this device
                                     </label>

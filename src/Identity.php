@@ -3,6 +3,7 @@
 namespace Statonlab\MultiFactorAuth;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Route;
 use Statonlab\MultiFactorAuth\Http\Controllers\MultiFactorAuthController;
 use Statonlab\MultiFactorAuth\Models\AuthenticationToken;
@@ -32,7 +33,8 @@ class Identity
      * @param \Illuminate\Contracts\Auth\Authenticatable $user
      * @return AuthenticationToken
      */
-    public function createToken(Authenticatable $user) {
+    public function createToken(Authenticatable $user)
+    {
         return $user->createAuthToken();
     }
 
@@ -48,12 +50,12 @@ class Identity
             return true;
         }
 
-        $cookie = cookie()->get($this->cookieName);
+        $cookie = cookie($this->cookieName)->getValue();
         if (! $cookie) {
             return false;
         }
 
-        if ($cookie === $user->getAuthIdentifier()) {
+        if ($cookie === sha1($user->getAuthIdentifier())) {
             // Set session
             session()->put($this->sessionName, $user->getAuthIdentifier());
 
@@ -94,7 +96,8 @@ class Identity
 
         if ($remember_device) {
             $lifetime = config('multi_factor_auth.cookie_lifetime');
-            $cookie = cookie()->make($this->cookieName, $user->getAuthIdentifier(), $lifetime);
+            $cookie = cookie()->make($this->cookieName, sha1($user->getAuthIdentifier()),
+                $lifetime);
             cookie()->queue($cookie);
         }
 
@@ -102,16 +105,27 @@ class Identity
     }
 
     /**
+     * Delete cookie.
+     */
+    public function forgetDevice()
+    {
+        if (Cookie::get($this->cookieName)) {
+            cookie()->queue(cookie()->forget($this->cookieName));
+        }
+    }
+
+    /**
      * Register routes.
      */
-    public function routes() {
+    public function routes()
+    {
         Route::get('/identity-verification', [MultiFactorAuthController::class, 'index'])
             ->name('mfa.index');
-        Route::post('/identity-verification', [MultiFactorAuthController::class, 'sendToken'])
-            ->name('mfa.send');
-        Route::get('/identity-verification/verify', [MultiFactorAuthController::class, 'showVerificationForm'])
-            ->name('mfa.form');
-        Route::post('/identity-verification/verify', [MultiFactorAuthController::class, 'verify'])
-            ->name('mfa.verify');
+        Route::post('/identity-verification',
+            [MultiFactorAuthController::class, 'sendToken'])->name('mfa.send');
+        Route::get('/identity-verification/verify',
+            [MultiFactorAuthController::class, 'showVerificationForm'])->name('mfa.form');
+        Route::post('/identity-verification/verify',
+            [MultiFactorAuthController::class, 'verify'])->name('mfa.verify');
     }
 }
