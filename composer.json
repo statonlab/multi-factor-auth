@@ -1,0 +1,41 @@
+{
+    "name": "statonlab/multi-factor-auth",
+    "description": "Provides multi-factor authentication to Laravel applications",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Abdullah Almsaeed",
+            "email": "almasaeed2010@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "laravel/framework": "^v7.22.4",
+        "doctrine/dbal": "^2.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Statonlab\\MultiFactorAuth\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Statonlab\\MultiFactorAuth\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Statonlab\\MultiFactorAuth\\MultiFactorAuthProvider"
+            ],
+            "aliases": {
+                "MultiFactorAuth": "Statonlab\\MultiFactorAuth\\Facades\\MultiFactorAuthFacade"
+            }
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^v5",
+        "orchestra/canvas": "^v5"
+    }
+}

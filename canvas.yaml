@@ -1,0 +1,30 @@
+preset: package
+
+namespace: Statonlab\MultiFactorAuth
+user-auth-provider: App\User
+
+paths:
+  src: src
+  resource: resources
+
+factory:
+  path: src/Factories
+
+migration:
+  path: src/Migrations
+  prefix: ''
+
+console:
+  namespace: Statonlab\MultiFactorAuth\Console
+
+model:
+  namespace: Statonlab\MultiFactorAuth\Models
+
+provider:
+  namespace: Statonlab\MultiFactorAuth
+
+testing:
+  namespace: Statonlab\MultiFactorAuth\Tests
+
+middleware:
+  namespace: Statonlab\MultiFactorAuth\Http\Middleware
