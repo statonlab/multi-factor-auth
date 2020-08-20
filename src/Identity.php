@@ -50,7 +50,7 @@ class Identity
             return true;
         }
 
-        $cookie = cookie($this->cookieName)->getValue();
+        $cookie = Cookie::get($this->cookieName);
         if (! $cookie) {
             return false;
         }
@@ -96,8 +96,7 @@ class Identity
 
         if ($remember_device) {
             $lifetime = config('multi_factor_auth.cookie_lifetime');
-            $cookie = cookie()->make($this->cookieName, sha1($user->getAuthIdentifier()),
-                $lifetime);
+            $cookie = cookie()->make($this->cookieName, sha1($user->getAuthIdentifier()), $lifetime);
             cookie()->queue($cookie);
         }
 
@@ -116,16 +115,14 @@ class Identity
 
     /**
      * Register routes.
+     *
+     * @param string $controller
      */
-    public function routes()
+    public function routes(string $controller = MultiFactorAuthController::class)
     {
-        Route::get('/identity-verification', [MultiFactorAuthController::class, 'index'])
-            ->name('mfa.index');
-        Route::post('/identity-verification',
-            [MultiFactorAuthController::class, 'sendToken'])->name('mfa.send');
-        Route::get('/identity-verification/verify',
-            [MultiFactorAuthController::class, 'showVerificationForm'])->name('mfa.form');
-        Route::post('/identity-verification/verify',
-            [MultiFactorAuthController::class, 'verify'])->name('mfa.verify');
+        Route::get('/identity-verification', [$controller, 'index'])->name('mfa.index');
+        Route::post('/identity-verification', [$controller, 'sendToken'])->name('mfa.send');
+        Route::get('/identity-verification/verify', [$controller, 'showVerificationForm'])->name('mfa.form');
+        Route::post('/identity-verification/verify', [$controller, 'verify'])->name('mfa.verify');
     }
 }
