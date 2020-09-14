@@ -11,8 +11,6 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "laravel/framework": "^v7.22.4",
-        "doctrine/dbal": "^2.10"
     },
     "autoload": {
         "psr-4": {
@@ -36,6 +34,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^v5",
-        "orchestra/canvas": "^v5"
+        "orchestra/canvas": "^v5",
+        "laravel/framework": "^7.0",
+        "doctrine/dbal": "^2.10"
     }
 }
