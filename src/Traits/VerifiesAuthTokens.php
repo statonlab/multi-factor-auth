@@ -70,11 +70,14 @@ trait VerifiesAuthTokens
     {
         $user = $request->user();
 
-        if (RateLimiter::tooManyAttempts("statonlab-mfa:send-token-$user->id", 1)) {
+        $key = "statonlab-mfa:send-token-$user->id";
+        if (RateLimiter::tooManyAttempts($key, 1)) {
             return redirect()->back()->withErrors([
                 'attempts' => ['Please wait at least 1 minute before attempting to send a verification code again.'],
             ]);
         }
+
+        RateLimiter::hit($key);
 
         $identity = new Identity();
         $token = $identity->createToken($user);
@@ -116,17 +119,19 @@ trait VerifiesAuthTokens
         ]);
 
         $user = $request->user();
-
-        if (RateLimiter::tooManyAttempts("statonlab-mfa:verify-token-$user->id", 5)) {
+        $key = "statonlab-mfa:verify-token-$user->id";
+        if (RateLimiter::tooManyAttempts($key, 5)) {
             return redirect()->back()->withErrors([
                 'code' => ['Please wait at least 1 minute before attempting to verify code again.'],
             ]);
         }
 
+        RateLimiter::hit($key);
+
         $remember = $request->input('remember') == 1;
         $identity = new Identity();
         if ($identity->attempt($user, $request->input('code'), $remember)) {
-            RateLimiter::clear("statonlab-mfa:verify-token-$user->id");
+            RateLimiter::clear($key);
 
             return $this->sendSuccessResponse();
         }
