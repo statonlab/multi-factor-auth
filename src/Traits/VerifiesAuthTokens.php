@@ -2,6 +2,7 @@
 
 namespace Statonlab\MultiFactorAuth\Traits;
 
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Statonlab\MultiFactorAuth\Identity;
@@ -68,6 +69,13 @@ trait VerifiesAuthTokens
     public function sendToken(Request $request)
     {
         $user = $request->user();
+
+        if (RateLimiter::tooManyAttempts("statonlab-mfa:send-token-$user->id", 1)) {
+            return redirect()->back()->withErrors([
+                'attempts' => ['Please wait at least 1 minute before attempting to send a verification code again.'],
+            ]);
+        }
+
         $identity = new Identity();
         $token = $identity->createToken($user);
 
@@ -107,9 +115,19 @@ trait VerifiesAuthTokens
             'remember' => 'nullable|boolean',
         ]);
 
+        $user = $request->user();
+
+        if (RateLimiter::tooManyAttempts("statonlab-mfa:verify-token-$user->id", 5)) {
+            return redirect()->back()->withErrors([
+                'code' => ['Please wait at least 1 minute before attempting to verify code again.'],
+            ]);
+        }
+
+        $remember = $request->input('remember') == 1;
         $identity = new Identity();
-        if ($identity->attempt($request->user(), $request->input('code'),
-            $request->input('remember') == 1)) {
+        if ($identity->attempt($user, $request->input('code'), $remember)) {
+            RateLimiter::clear("statonlab-mfa:verify-token-$user->id");
+
             return $this->sendSuccessResponse();
         }
 
